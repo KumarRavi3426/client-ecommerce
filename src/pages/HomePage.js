@@ -54,7 +54,7 @@ const HomePage = () => {
   // Total count
   const getTotal = async () => {
     try {
-      const { data } = await axios.get("${process.env.REACT_APP_API_URL}/api/v1/product/product-count");
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/product/product-count`);
       setTotal(data?.total);
     } catch (error) {
       console.log(error);
