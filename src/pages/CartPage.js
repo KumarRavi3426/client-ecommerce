@@ -63,7 +63,7 @@ const CartPage = () => {
     try {
       setLoading(true);
       const { nonce } = await instance.requestPaymentMethod();
-      const { data } = await axios.post("${process.env.REACT_APP_API_URL}/api/v1/product/braintree/payment", {
+      const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/product/braintree/payment`, {
         nonce,
         cart,
       });
