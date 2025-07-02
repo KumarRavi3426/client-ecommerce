@@ -11,6 +11,9 @@ const Users = () => {
           </div>
           <div className="col-md-9 ">
             <h1>All users</h1>
+            <div>
+              
+            </div>
           </div>
         </div>
       </div>

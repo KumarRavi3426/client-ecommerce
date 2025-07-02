@@ -46,16 +46,20 @@ const CartPage = () => {
     }
   };
 
-
   const checkoutHandler = async (amount) => {
     setLoading(true);
-    const { data:{key} } = await axios.get(
+    const { data: { key } } = await axios.get(
       `${process.env.REACT_APP_API_URL}/api/getkey`
     );
+
+    // Remove photo property from each cart item
+    const cartWithoutPhotos = cart.map(({ photo, ...rest }) => rest);
+
     const {
       data: { order },
     } = await axios.post(`${process.env.REACT_APP_API_URL}/api/checkout`, {
       amount,
+      cart: cartWithoutPhotos,
     });
 
     const options = {
@@ -228,11 +232,9 @@ const CartPage = () => {
                   <button
                     className="btn btn-primary"
                     onClick={()=> checkoutHandler(totalPrice())}
-                    // disabled={loading || !auth?.user?.address}
-                    disabled={!auth?.user?.address}
+                    disabled={loading || !auth?.user?.address}
                   >
-                    {/* {loading ? "Processing ...." : "Make Payment"} */}
-                    Make Payment
+                    {loading ? "Processing ...." : "Make Payment"}
                   </button>
 
 
