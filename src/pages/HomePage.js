@@ -17,13 +17,16 @@ const HomePage = () => {
   const [checked, setChecked] = useState([]);
   const [radio, setRadio] = useState([]);
   const [total, setTotal] = useState(0);
+  const [filteredTotal, setFilteredTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
   // get all categories
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/category/get-category`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/category/get-category`
+      );
       if (data?.success) {
         setCategories(data?.category);
       }
@@ -41,7 +44,9 @@ const HomePage = () => {
   const getAllProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/product/product-list/${page}`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/product/product-list/${page}`
+      );
       setLoading(false);
       setProducts(data.products);
     } catch (error) {
@@ -54,7 +59,9 @@ const HomePage = () => {
   // Total count
   const getTotal = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/product/product-count`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/product/product-count`
+      );
       setTotal(data?.total);
     } catch (error) {
       console.log(error);
@@ -71,9 +78,28 @@ const HomePage = () => {
   const loadMore = async () => {
     try {
       setLoading(true);
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/product/product-list/${page}`);
-      setLoading(false);
-      setProducts([...products, ...data?.products]);
+
+      // If filters are active, call filterProduct with pagination logic
+      if (checked.length > 0 || radio.length > 0) {
+        const { data } = await axios.post(
+          `${process.env.REACT_APP_API_URL}/api/v1/product/product-filters`,
+          {
+            checked,
+            radio,
+            page: page, // Send page number to backend for filtered pagination
+          }
+        );
+        setLoading(false);
+        setProducts((prevProducts) => [...prevProducts, ...data?.products]);
+        setFilteredTotal(data?.totalFiltered || 0);
+      } else {
+        // No filters active, use regular pagination
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/product/product-list/${page}`
+        );
+        setLoading(false);
+        setProducts((prevProducts) => [...prevProducts, ...data?.products]);
+      }
     } catch (error) {
       setLoading(false);
       console.log(error);
@@ -92,7 +118,10 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
+    if (!checked.length && !radio.length) {
+      getAllProducts();
+      setFilteredTotal(0); // Reset filtered total when no filters
+    }
   }, [checked, radio]);
   useEffect(() => {
     if (checked.length || radio.length) filterProduct();
@@ -100,11 +129,17 @@ const HomePage = () => {
 
   const filterProduct = async () => {
     try {
-      const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/v1/product/product-filters`, {
-        checked,
-        radio,
-      });
+      const { data } = await axios.post(
+        `${process.env.REACT_APP_API_URL}/api/v1/product/product-filters`,
+        {
+          checked,
+          radio,
+          page: 1, // Reset to page 1 when applying new filters
+        }
+      );
       setProducts(data?.products);
+      setFilteredTotal(data?.totalFiltered || 0);
+      setPage(1); // Reset page to 1 when filters change
     } catch (error) {
       console.log(error);
     }
@@ -197,24 +232,28 @@ const HomePage = () => {
                 {loading ? "Loading..." : "Load more"}
               </button>
             )} */}
-            {products && products.length < total && (
-              <button
-                className="btn loadmore"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setPage(page + 1);
-                }}
-              >
-                {loading ? (
-                  "Loading ..."
-                ) : (
-                  <>
-                    {" "}
-                    Loadmore <AiOutlineReload />
-                  </>
-                )}
-              </button>
-            )}
+            {products &&
+              products.length <
+                (checked.length > 0 || radio.length > 0
+                  ? filteredTotal
+                  : total) && (
+                <button
+                  className="btn loadmore"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setPage(page + 1);
+                  }}
+                >
+                  {loading ? (
+                    "Loading ..."
+                  ) : (
+                    <>
+                      {" "}
+                      Loadmore <AiOutlineReload />
+                    </>
+                  )}
+                </button>
+              )}
           </div>
         </div>
       </div>
