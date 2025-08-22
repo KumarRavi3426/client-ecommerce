@@ -29,7 +29,9 @@ const CreateProduct = () => {
 
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/category/get-category`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/category/get-category`
+      );
       if (data?.success) {
         setCategories(data?.category);
       }
@@ -42,7 +44,7 @@ const CreateProduct = () => {
     getAllCategory();
   }, []);
 
-  const handleCreate = (e) => {
+  const handleCreate = async (e) => {
     // going to use FormData
     e.preventDefault();
     try {
@@ -53,21 +55,56 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.post(
+
+      const { data } = await axios.post(
         `${process.env.REACT_APP_API_URL}/api/v1/product/create-product`,
         productData
       );
 
-      // I don't understand the reason for interchanging the following if else statements
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
         toast.success("Product Created Successfully");
         navigate("/dashboard/admin/products");
+        // Reset form
+        setName("");
+        setDescription("");
+        setPrice("");
+        setQuantity("");
+        setCategory("");
+        setPhoto("");
+        setShipping("");
+      } else {
+        // Handle validation errors
+        if (data?.errors && Array.isArray(data.errors)) {
+          data.errors.forEach((error) => toast.error(error));
+        } else {
+          toast.error(data?.message || "Failed to create product");
+        }
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const { data } = error.response;
+
+        if (data?.errors && Array.isArray(data.errors)) {
+          // Handle validation errors from backend
+          data.errors.forEach((err) => toast.error(err));
+        } else if (data?.message) {
+          toast.error(data.message);
+        } else {
+          toast.error(`Server Error: ${error.response.status}`);
+        }
+      } else if (error.request) {
+        // Network error
+        toast.error(
+          "Network Error: Unable to reach server. Please check if the backend is running."
+        );
+      } else {
+        // Other error
+        toast.error("Something went wrong");
+      }
     }
   };
   return (

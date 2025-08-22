@@ -26,6 +26,7 @@ import Categories from "./pages/Categories";
 import CategoryProduct from "./pages/CategoryProduct";
 import CartPage from "./pages/CartPage";
 import AdminOrders from "./pages/Admin/AdminOrders";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
@@ -59,6 +60,7 @@ function App() {
         <Route path="/policy" element={<Policy />}></Route>
         <Route path="/*" element={<Pagenotfound />}></Route>
       </Routes>
+      <Toaster />
     </>
   );
 }

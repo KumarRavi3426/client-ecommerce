@@ -44,7 +44,9 @@ const UpdateProduct = () => {
 
   const getAllCategory = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/category/get-category`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/category/get-category`
+      );
       if (data?.success) {
         setCategories(data?.category);
       }
@@ -73,22 +75,50 @@ const UpdateProduct = () => {
         productData
       );
 
-      // I don't understand the reason for interchanging the following if else statements
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
-        toast.success("Product Created Successfully");
+        toast.success("Product Updated Successfully");
         navigate("/dashboard/admin/products");
+      } else {
+        // Handle validation errors
+        if (data?.errors && Array.isArray(data.errors)) {
+          data.errors.forEach((error) => toast.error(error));
+        } else {
+          toast.error(data?.message || "Failed to update product");
+        }
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something went wrong");
+
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const { data } = error.response;
+
+        if (data?.errors && Array.isArray(data.errors)) {
+          // Handle validation errors from backend
+          data.errors.forEach((err) => toast.error(err));
+        } else if (data?.message) {
+          toast.error(data.message);
+        } else {
+          toast.error(`Server Error: ${error.response.status}`);
+        }
+      } else if (error.request) {
+        // Network error
+        toast.error(
+          "Network Error: Unable to reach server. Please check if the backend is running."
+        );
+      } else {
+        // Other error
+        toast.error("Something went wrong");
+      }
     }
   };
 
   const handleDelete = async () => {
     try {
-      let answer = window.prompt("Are You Sure want to delete this product ? ");
+      let answer = window.confirm(
+        "Are you sure you want to delete this product?"
+      );
       if (!answer) return;
       const { data } = await axios.delete(
         `${process.env.REACT_APP_API_URL}/api/v1/product/delete-product/${id}`

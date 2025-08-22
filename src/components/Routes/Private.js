@@ -10,18 +10,23 @@ const PrivateRoute = () => {
 
   useEffect(() => {
     const authCheck = async () => {
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/v1/auth/user-auth`
-        // {
-        //   headers: {
-        //     //set headers in context
-        //     Authorization: auth?.token,
-        //   },
-        // }
-      );
-      if (res.data.ok) {
-        setOk(true);
-      } else {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/v1/auth/user-auth`,
+          {
+            headers: {
+              //set headers in context
+              Authorization: auth?.token,
+            },
+          }
+        );
+        if (res.data.ok) {
+          setOk(true);
+        } else {
+          setOk(false);
+        }
+      } catch (error) {
+        console.log("Admin auth check failed:", error);
         setOk(false);
       }
     };
