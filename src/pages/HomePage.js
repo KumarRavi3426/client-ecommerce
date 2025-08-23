@@ -146,8 +146,8 @@ const HomePage = () => {
   };
   return (
     <Layout title={"Home it is"}>
-      <div className="row mt-3">
-        <div className="col-md-2">
+      <div className="row mt-3 home-page">
+        <div className="filters col-md-2">
           {/* category filter */}
           <h4 className="text-center">Filter by category</h4>
           <div className="d-flex flex-column">

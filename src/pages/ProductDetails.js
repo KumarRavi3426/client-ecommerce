@@ -43,7 +43,7 @@ const ProductDetails = () => {
   };
   return (
     <Layout>
-      <div className="row container mt-2">
+      <div className="product-details row container mt-2">
         <div className="col-md-6">
           <img
             src={`${process.env.REACT_APP_API_URL}/api/v1/product/product-photo/${product._id}`}
@@ -54,7 +54,7 @@ const ProductDetails = () => {
           />
         </div>
         <div className="col-md-6 ">
-          <h1 className="text-center">Product Details</h1>
+          <h1 className="text-center product-details-info">Product Details</h1>
           <h6>Name : {product.name}</h6>
           <h6>Description : {product.description}</h6>
           <h6>Price : {product.price}</h6>
@@ -72,7 +72,7 @@ const ProductDetails = () => {
         </div>
       </div>
       <hr />
-      <div className="row container">
+      <div className="row container similar-products">
         <h6>Similar Products</h6>
         {relatedProducts.length < 1 && (
           <p className="text-center">No Similar Products found</p>
@@ -99,10 +99,7 @@ const ProductDetails = () => {
                   class="btn btn-secondary ms-1"
                   onClick={() => {
                     setCart([...cart, p]);
-                    localStorage.setItem(
-                      "cart",
-                      JSON.stringify([...cart, p])
-                    );
+                    localStorage.setItem("cart", JSON.stringify([...cart, p]));
                     toast.success("Item added to cart");
                   }}
                 >
