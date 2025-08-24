@@ -11,7 +11,9 @@ const Orders = () => {
 
   const getOrders = async () => {
     try {
-      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/auth/orders`);
+      const { data } = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/v1/auth/orders`
+      );
       setOrders(data);
     } catch (error) {
       console.log(error);
@@ -51,7 +53,11 @@ const Orders = () => {
                         <td>{o?.status}</td>
                         <td>{o?.buyer?.name}</td>
                         <td>{moment(o?.createAt).fromNow()}</td>
-                        <td>{o?.payment?.success ? "Success" : "Failed"}</td>
+                        <td>
+                          {o?.payment?.status === "success"
+                            ? "Success"
+                            : "Failed"}
+                        </td>
                         <td>{o?.products?.length}</td>
                       </tr>
                     </tbody>

@@ -46,21 +46,35 @@ const CartPage = () => {
     }
   };
 
+  //clear cart
+  const clearCart = () => {
+    try {
+      setCart([]);
+      localStorage.removeItem("cart");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const checkoutHandler = async (amount) => {
     setLoading(true);
-    const { data: { key } } = await axios.get(
-      `${process.env.REACT_APP_API_URL}/api/getkey`
-    );
+
+    const {
+      data: { key },
+    } = await axios.get(`${process.env.REACT_APP_API_URL}/api/v1/pay/getkey`);
 
     // Remove photo property from each cart item
     const cartWithoutPhotos = cart.map(({ photo, ...rest }) => rest);
 
     const {
       data: { order },
-    } = await axios.post(`${process.env.REACT_APP_API_URL}/api/checkout`, {
-      amount,
-      cart: cartWithoutPhotos,
-    });
+    } = await axios.post(
+      `${process.env.REACT_APP_API_URL}/api/v1/pay/checkout`,
+      {
+        amount,
+        cart: cartWithoutPhotos,
+      }
+    );
 
     const options = {
       key,
@@ -70,7 +84,30 @@ const CartPage = () => {
       description: "Payment request from Kumar Ravi from E-commerce website",
       // image: "https://avatars.githubusercontent.com/u/25058652?v=4",
       order_id: order.id,
-      callback_url: `${process.env.REACT_APP_API_URL}/api/paymentverification`,
+      // callback_url: `${process.env.REACT_APP_API_URL}/api/v1/pay/paymentverification`,
+      handler: async function (response) {
+        // 3️⃣ Verify payment with backend
+        // convert to axios
+        // why is the body in sent as string
+        const verifyRes = await fetch(
+          `${process.env.REACT_APP_API_URL}/api/v1/pay/paymentverification`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth?.token}`,
+            },
+            body: JSON.stringify({
+              ...response,
+              cart: cartWithoutPhotos,
+              user: auth?.user,
+            }),
+          }
+        );
+        const result = await verifyRes.json();
+        alert(result.status);
+        navigate("/");
+      },
       prefill: {
         name: auth?.user?.name,
         email: auth?.user?.email,
@@ -85,9 +122,7 @@ const CartPage = () => {
     };
     const razor = new window.Razorpay(options);
     razor.open();
-    console.log(window);
   };
-
 
   //get payment gateway token
   // const getToken = async () => {
@@ -132,8 +167,9 @@ const CartPage = () => {
             </h1>
             <h4 className="text-center">
               {cart?.length
-                ? `You have ${cart.length} items in your cart ${auth?.token ? "" : "please login to checkout"
-                }`
+                ? `You have ${cart.length} items in your cart ${
+                    auth?.token ? "" : "please login to checkout"
+                  }`
                 : "Your cart is empty"}
             </h4>
           </div>
@@ -167,9 +203,15 @@ const CartPage = () => {
           </div>
           <div className="col-md-4 text-center">
             <h2>Cart Summary</h2>
-            <p>Total | Checkout | Payment</p>
             <hr />
             <h4>Total : {totalPrice()} </h4>
+            {cart?.length > 0 && (
+              <div className="mb-3">
+                <button className="btn btn-outline-danger" onClick={clearCart}>
+                  Clear Cart
+                </button>
+              </div>
+            )}
             {auth?.user?.address ? (
               <>
                 <div className="mb-3">
@@ -231,13 +273,11 @@ const CartPage = () => {
 
                   <button
                     className="btn btn-primary"
-                    onClick={()=> checkoutHandler(totalPrice())}
+                    onClick={() => checkoutHandler(totalPrice())}
                     disabled={loading || !auth?.user?.address}
                   >
                     {loading ? "Processing ...." : "Make Payment"}
                   </button>
-
-
                 </>
               )}
             </div>
