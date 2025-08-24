@@ -51,6 +51,7 @@ const CartPage = () => {
     try {
       setCart([]);
       localStorage.removeItem("cart");
+      toast.success("Cart cleared successfully");
     } catch (error) {
       console.log(error);
     }
