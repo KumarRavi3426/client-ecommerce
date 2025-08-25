@@ -89,7 +89,7 @@ const AdminOrders = () => {
                           </Select>
                         </td>
                         <td>{o?.buyer?.name}</td>
-                        <td>{moment(o?.createAt).fromNow()}</td>
+                        <td>{moment(o?.createdAt).fromNow()}</td>
                         <td>
                           {o?.payment?.status === "success"
                             ? "Success"
